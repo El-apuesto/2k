@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section, .output-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .characters-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .characters-input input {
+            flex: 1;
+        }
+
+        .characters-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .character-tag {
+            background: #3498db;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .character-tag button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .story-output {
+            display: none;
+        }
+
+        .comment {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .scenes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .scene {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .scene-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .scene-visual {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .scene-text {
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📖 Story Generator</h1>
+            <p class="subtitle">Create amazing stories with AI - no API keys required!</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="prompt">Story Prompt</label>
+                    <textarea 
+                        id="prompt" 
+                        placeholder="Describe what you want your story to be about... (e.g., 'a detective solving a mystery in a haunted mansion')"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="style">Story Style</label>
+                    <select id="style">
+                        <option value="dialogue">Dialogue-Driven</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="romance">Romance</option>
+                        <option value="mystery">Mystery</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="characters">Characters</label>
+                    <div class="characters-input">
+                        <input 
+                            type="text" 
+                            id="characterInput" 
+                            placeholder="Add a character name..."
+                        >
+                        <button type="button" class="btn" onclick="addCharacter()" style="width: auto; padding: 12px 20px;">Add</button>
+                    </div>
+                    <div class="characters-list" id="charactersList"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="numScenes">Number of Scenes</label>
+                    <input 
+                        type="number" 
+                        id="numScenes" 
+                        min="1" 
+                        max="10" 
+                        value="3"
+                    >
+                </div>
+
+                <button class="btn" onclick="generateStory()" id="generateBtn">
+                    Generate Story
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Generating your amazing story... ✨</p>
+                </div>
+
+                <div class="error" id="error"></div>
+            </div>
+
+            <div class="output-section">
+                <div class="story-output" id="storyOutput">
+                    <div class="comment" id="storyComment"></div>
+                    <div class="scenes-container" id="scenesContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let characters = [];
+
+        function addCharacter() {
+            const input = document.getElementById('characterInput');
+            const name = input.value.trim();
+            
+            if (name && !characters.includes(name)) {
+                characters.push(name);
+                updateCharactersList();
+                input.value = '';
+            }
+        }
+
+        function updateCharactersList() {
+            const list = document.getElementById('charactersList');
+            list.innerHTML = '';
+            
+            characters.forEach((character, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'character-tag';
+                tag.innerHTML = `
+                    ${character}
+                    <button onclick="removeCharacter(${index})">×</button>
+                `;
+                list.appendChild(tag);
+            });
+        }
+
+        function removeCharacter(index) {
+            characters.splice(index, 1);
+            updateCharactersList();
+        }
+
+        async function generateStory() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const style = document.getElementById('style').value;
+            const numScenes = parseInt(document.getElementById('numScenes').value);
+
+            if (!prompt) {
+                showError('Please enter a story prompt');
+                return;
+            }
+
+            // Show loading state
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+            error.style.display = 'none';
+
+            try {
+                const response = await fetch('/.netlify/functions/generate-story', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt,
+                        style,
+                        characters,
+                        numScenes
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const storyData = await response.json();
+                displayStory(storyData);
+
+            } catch (error) {
+                console.error('Error generating story:', error);
+                showError('Failed to generate story. Please try again.');
+            } finally {
+                generateBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayStory(storyData) {
+            const output = document.getElementById('storyOutput');
+            const comment = document.getElementById('storyComment');
+            const scenesContainer = document.getElementById('scenesContainer');
+
+            // Display comment
+            comment.textContent = storyData.comment;
+
+            // Display scenes
+            scenesContainer.innerHTML = '';
+            storyData.scenes.forEach((scene, index) => {
+                const sceneElement = document.createElement('div');
+                sceneElement.className = 'scene';
+                sceneElement.innerHTML = `
+                    <div class="scene-number">${index + 1}</div>
+                    <div class="scene-visual">
+                        <strong>Visual:</strong> ${scene.visualDescription}
+                    </div>
+                    <div class="scene-text">${scene.text}</div>
+                `;
+                scenesContainer.appendChild(sceneElement);
+            });
+
+            output.style.display = 'block';
+        }
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        // Allow adding characters with Enter key
+        document.getElementById('characterInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addCharacter();
+            }
+        });
+
+        // Add some sample characters for demo
+        characters = ['Detective', 'Assistant', 'Mysterious Stranger'];
+        updateCharactersList();
+    </script>
+</body>
+</html>

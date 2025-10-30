@@ -1,0 +1,16 @@
+{
+  "name": "storyframe",
+  "version": "1.0.0",
+  "description": "AI Cinematic Story Generator",
+  "main": "index.html",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["ai", "storytelling", "huggingface"],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story & Script Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-section, .output-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .character-setup {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .character-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 10px;
+        }
+
+        .character-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .character-tag {
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px;
+        }
+
+        .character-tag button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .output-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .scene {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .scene-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .scene-image {
+            width: 100%;
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            border: 2px dashed #dee2e6;
+        }
+
+        .scene-dialogue {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 10px;
+        }
+
+        .dialogue-line {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .character-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .script-format {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .duration-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .duration-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .duration-option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .art-style-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .art-style-option {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .art-style-option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Script & Story Generator</h1>
+            <p class="subtitle">Generate scripts with dialogue and create accompanying visuals</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="prompt">Story Topic or Script</label>
+                    <textarea 
+                        id="prompt" 
+                        placeholder="Enter a topic for a story OR paste a script with character names in format: CHARACTER: dialogue text"
+                    ></textarea>
+                    <div class="script-format">
+                        Format: Put character name in caps followed by colon before each speaking part
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Video Duration</label>
+                    <div class="duration-options">
+                        <div class="duration-option selected" data-minutes="1" data-images="10" onclick="selectDuration(this)">
+                            1 min (10 images)
+                        </div>
+                        <div class="duration-option" data-minutes="3" data-images="30" onclick="selectDuration(this)">
+                            3 min (30 images)
+                        </div>
+                        <div class="duration-option" data-minutes="5" data-images="50" onclick="selectDuration(this)">
+                            5 min (50 images)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Art Style</label>
+                    <div class="art-style-options" id="artStyleOptions">
+                        <div class="art-style-option" data-style="graphic novel illustration" onclick="selectArtStyle(this)">Graphic Novel</div>
+                        <div class="art-style-option" data-style="US comic book style" onclick="selectArtStyle(this)">US Comic Book</div>
+                        <div class="art-style-option" data-style="DreamWorks animation style" onclick="selectArtStyle(this)">DreamWorks Style</div>
+                        <div class="art-style-option" data-style="black and white line art, a-ha video style" onclick="selectArtStyle(this)">a-ha Video Style</div>
+                        <div class="art-style-option" data-style="claymation style" onclick="selectArtStyle(this)">Claymation</div>
+                        <div class="art-style-option" data-style="3D animal cartoons" onclick="selectArtStyle(this)">3D Animal Cartoons</div>
+                        <div class="art-style-option" data-style="photo realistic" onclick="selectArtStyle(this)">Photo Realistic</div>
+                        <div class="art-style-option" data-style="cinematic film style" onclick="selectArtStyle(this)">Cinematic</div>
+                        <div class="art-style-option" data-style="watercolor line drawings over realistic photos" onclick="selectArtStyle(this)">Watercolor + Photos</div>
+                        <div class="art-style-option" onclick="useRandomStyle()">🎲 Random Style</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Character Setup</label>
+                    <div id="characterSetup">
+                        <div class="character-setup">
+                            <div class="character-row">
+                                <div>
+                                    <label>Role</label>
+                                    <select class="character-role">
+                                        <option value="">Select Role</option>
+                                        <option value="narrator">Narrator</option>
+                                        <option value="clergy">Clergy</option>
+                                        <option value="alter boy">Alter Boy</option>
+                                        <option value="alter girl">Alter Girl</option>
+                                        <option value="altar server">Altar Server</option>
+                                        <option value="missionary">Missionary</option>
+                                        <option value="choir boy">Choir Boy</option>
+                                        <option value="choir girl">Choir Girl</option>
+                                        <option value="creepy guy down the street">Creepy Guy</option>
+                                        <option value="town drunk">Town Drunk</option>
+                                        <option value="sex offender">Sex Offender</option>
+                                        <option value="cat lady">Cat Lady</option>
+                                        <option value="juvenile delinquent">Juvenile Delinquent</option>
+                                        <option value="ex-con">Ex-Con</option>
+                                        <option value="florida man">Florida Man</option>
+                                        <option value="student">Student</option>
+                                        <option value="college student">College Student</option>
+                                        <option value="young adult">Young Adult</option>
+                                        <option value="middle aged adult">Middle-Aged Adult</option>
+                                        <option value="retiree">Retiree</option>
+                                        <option value="elderly">Elderly</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Gender</label>
+                                    <select class="character-gender">
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Name</label>
+                                    <input type="text" class="character-name" placeholder="Name">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-small" onclick="addCharacterRow()">+ Add Character</button>
+                </div>
+
+                <button class="btn btn-full" onclick="generateStory()" id="generateBtn">
+                    Generate Script & Story
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Generating your script and visuals... ✨</p>
+                </div>
+
+                <div class="error" id="error"></div>
+            </div>
+
+            <div class="output-section">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="showTab('scriptTab')">Script</button>
+                    <button class="tab-button" onclick="showTab('visualsTab')">Visuals</button>
+                    <button class="tab-button" onclick="showTab('audioTab')">Audio</button>
+                </div>
+
+                <div class="tab-content active" id="scriptTab">
+                    <div id="scriptOutput"></div>
+                </div>
+
+                <div class="tab-content" id="visualsTab">
+                    <div id="visualsOutput"></div>
+                </div>
+
+                <div class="tab-content" id="audioTab">
+                    <div id="audioOutput"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedDuration = 1;
+        let selectedImages = 10;
+        let selectedArtStyle = 'graphic novel illustration';
+        let characters = [];
+
+        function selectDuration(element) {
+            document.querySelectorAll('.duration-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedDuration = parseInt(element.dataset.minutes);
+            selectedImages = parseInt(element.dataset.images);
+        }
+
+        function selectArtStyle(element) {
+            document.querySelectorAll('.art-style-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedArtStyle = element.dataset.style;
+        }
+
+        function useRandomStyle() {
+            const styles = [
+                'graphic novel illustration',
+                'US comic book style', 
+                'DreamWorks animation style',
+                'black and white line art, a-ha video style',
+                'claymation style',
+                '3D animal cartoons',
+                'photo realistic',
+                'cinematic film style',
+                'watercolor line drawings over realistic photos'
+            ];
+            selectedArtStyle = styles[Math.floor(Math.random() * styles.length)];
+            document.querySelectorAll('.art-style-option').forEach(opt => opt.classList.remove('selected'));
+            alert(`Random style selected: ${selectedArtStyle}`);
+        }
+
+        function addCharacterRow() {
+            const characterSetup = document.getElementById('characterSetup');
+            const newRow = document.createElement('div');
+            newRow.className = 'character-setup';
+            newRow.innerHTML = `
+                <div class="character-row">
+                    <div>
+                        <label>Role</label>
+                        <select class="character-role">
+                            <option value="">Select Role</option>
+                            <option value="narrator">Narrator</option>
+                            <option value="clergy">Clergy</option>
+                            <option value="alter boy">Alter Boy</option>
+                            <option value="alter girl">Alter Girl</option>
+                            <option value="altar server">Altar Server</option>
+                            <option value="missionary">Missionary</option>
+                            <option value="choir boy">Choir Boy</option>
+                            <option value="choir girl">Choir Girl</option>
+                            <option value="creepy guy down the street">Creepy Guy</option>
+                            <option value="town drunk">Town Drunk</option>
+                            <option value="sex offender">Sex Offender</option>
+                            <option value="cat lady">Cat Lady</option>
+                            <option value="juvenile delinquent">Juvenile Delinquent</option>
+                            <option value="ex-con">Ex-Con</option>
+                            <option value="florida man">Florida Man</option>
+                            <option value="student">Student</option>
+                            <option value="college student">College Student</option>
+                            <option value="young adult">Young Adult</option>
+                            <option value="middle aged adult">Middle-Aged Adult</option>
+                            <option value="retiree">Retiree</option>
+                            <option value="elderly">Elderly</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Gender</label>
+                        <select class="character-gender">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Name</label>
+                        <input type="text" class="character-name" placeholder="Name">
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-small" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+                    </div>
+                </div>
+            `;
+            characterSetup.appendChild(newRow);
+        }
+
+        function collectCharacters() {
+            characters = [];
+            const characterElements = document.querySelectorAll('.character-setup');
+            
+            characterElements.forEach(element => {
+                const role = element.querySelector('.character-role').value;
+                const gender = element.querySelector('.character-gender').value;
+                const name = element.querySelector('.character-name').value.trim();
+                
+                if (role && name) {
+                    characters.push({
+                        role: role,
+                        gender: gender,
+                        name: name
+                    });
+                }
+            });
+            
+            return characters;
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function generateStory() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const characters = collectCharacters();
+
+            if (!prompt) {
+                showError('Please enter a story topic or script');
+                return;
+            }
+
+            if (characters.length === 0) {
+                showError('Please add at least one character');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+            error.style.display = 'none';
+
+            try {
+                // Generate script first
+                const scriptResponse = await fetch('/.netlify/functions/generate-story', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt,
+                        characters,
+                        numScenes: selectedDuration,
+                        artStyle: selectedArtStyle,
+                        duration: selectedDuration,
+                        totalImages: selectedImages
+                    })
+                });
+
+                if (!scriptResponse.ok) {
+                    throw new Error(`Script generation failed: ${scriptResponse.status}`);
+                }
+
+                const storyData = await scriptResponse.json();
+                displayScript(storyData);
+                
+                // Generate images for each scene
+                await generateImages(storyData);
+                
+                // Generate audio
+                await generateAudio(storyData);
+
+            } catch (error) {
+                console.error('Error generating story:', error);
+                showError('Failed to generate content. Please try again.');
+            } finally {
+                generateBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayScript(storyData) {
+            const scriptOutput = document.getElementById('scriptOutput');
+            let html = `<h3>${storyData.title}</h3>`;
+            
+            storyData.scenes.forEach((scene, index) => {
+                html += `
+                    <div class="scene">
+                        <div class="scene-number">${index + 1}</div>
+                        <div class="scene-dialogue">
+                            ${scene.dialogue.map(line => `
+                                <div class="dialogue-line">
+                                    <span class="character-name">${line.character}:</span> ${line.text}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div><strong>Image Prompt:</strong> ${scene.imagePrompt}</div>
+                    </div>
+                `;
+            });
+            
+            scriptOutput.innerHTML = html;
+            showTab('scriptTab');
+        }
+
+        async function generateImages(storyData) {
+            const visualsOutput = document.getElementById('visualsOutput');
+            visualsOutput.innerHTML = '<p>Generating images...</p>';
+            
+            try {
+                for (let i = 0; i < storyData.scenes.length; i++) {
+                    const scene = storyData.scenes[i];
+                    const response = await fetch('/.netlify/functions/generate-image', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            prompt: scene.imagePrompt
+                        })
+                    });
+
+                    if (response.ok) {
+                        const imageData = await response.json();
+                        // Display generated image
+                        const img = document.createElement('img');
+                        img.src = imageData.image;
+                        img.style.maxWidth = '100%';
+                        img.style.borderRadius = '8px';
+                        visualsOutput.appendChild(img);
+                    }
+                }
+            } catch (error) {
+                console.error('Error generating images:', error);
+                visualsOutput.innerHTML += '<p>Some images failed to generate</p>';
+            }
+        }
+
+        async function generateAudio(storyData) {
+            const audioOutput = document.getElementById('audioOutput');
+            audioOutput.innerHTML = '<p>Generating audio...</p>';
+            
+            try {
+                // Combine all dialogue into a single narration text
+                let fullText = '';
+                storyData.scenes.forEach(scene => {
+                    scene.dialogue.forEach(line => {
+                        fullText += `${line.character} says: ${line.text}. `;
+                    });
+                });
+
+                const response = await fetch('/.netlify/functions/generate-audio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: fullText
+                    })
+                });
+
+                if (response.ok) {
+                    const audioData = await response.json();
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = audioData.audio;
+                    audio.style.width = '100%';
+                    audioOutput.innerHTML = '';
+                    audioOutput.appendChild(audio);
+                }
+            } catch (error) {
+                console.error('Error generating audio:', error);
+                audioOutput.innerHTML = '<p>Audio generation failed</p>';
+            }
+        }
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        // Initialize with one character row
+        addCharacterRow();
+    </script>
+</body>
+</html>
