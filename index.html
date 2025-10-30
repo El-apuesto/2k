@@ -620,7 +620,7 @@
 
             try {
                 // Generate script first
-                const scriptResponse = await fetch('/.netlify/functions/generate-story', {
+                const scriptResponse = await fetch('/api/generate-story', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -688,7 +688,7 @@
             try {
                 for (let i = 0; i < storyData.scenes.length; i++) {
                     const scene = storyData.scenes[i];
-                    const response = await fetch('/.netlify/functions/generate-image', {
+                    const response = await fetch('/api/generate-image', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -727,7 +727,7 @@
                     });
                 });
 
-                const response = await fetch('/.netlify/functions/generate-audio', {
+                const response = await fetch('/api/generate-audio', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
