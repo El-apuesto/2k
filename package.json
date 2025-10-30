@@ -1,9 +1,9 @@
 {
   "name": "story-generator",
-  "version": "1.0.0", 
+  "version": "1.0.0",
   "description": "AI Story Generator",
   "scripts": {
-    "build": "npm install",
+    "build": "echo 'No build step needed'",
     "start": "node server.js"
   },
   "dependencies": {
@@ -12,8 +12,5 @@
   },
   "engines": {
     "node": "18.x"
-  },
-  "optionalDependencies": {
-    "fsevents": "*"
   }
 }
