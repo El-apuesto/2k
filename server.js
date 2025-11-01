@@ -12,10 +12,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Your Netlify functions as Express routes
-app.post('/api/generate-story', require('./generate-story').handler);
-app.post('/api/generate-image', require('./generate-image').handler);
-app.post('/api/generate-audio', require('./generate-audio').handler);
+// API routes - using the simple backend folder
+app.post('/api/generate-story', require('./simple-backend/generate-story').handler);
+app.post('/api/generate-image', require('./simple-backend/generate-image').handler);
+app.post('/api/generate-audio', require('./simple-backend/generate-audio').handler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
